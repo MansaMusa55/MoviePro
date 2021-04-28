@@ -9,6 +9,7 @@ namespace MoviePro.Models
     public class Cast
     {
         public int Id { get; set; }
+        [Display(Name="Movie")]
         public int MovieId { get; set; }
         public int CastId { get; set; }
         public string Department { get; set; }
@@ -21,6 +22,8 @@ namespace MoviePro.Models
         public byte[] Profile { get; set; }
 
         public string ContentType { get; set; }
+
+        public Movie Movie { get; set; }
        
     }
 }

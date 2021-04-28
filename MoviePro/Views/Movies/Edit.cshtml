@@ -10,9 +10,13 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Poster" />
+            <input type="hidden" asp-for="ContentType" />
+            <input type="hidden" asp-for="BGImage" />
+            <input type="hidden" asp-for="BGContentType" />
             <div class="form-group">
                 <label asp-for="MovieId" class="control-label"></label>
                 <input asp-for="MovieId" class="form-control" />
@@ -40,13 +44,11 @@
             </div>
             <div class="form-group">
                 <label asp-for="Poster" class="control-label"></label>
-                <input asp-for="Poster" class="form-control" />
-                <span asp-validation-for="Poster" class="text-danger"></span>
+                <input type="file" name="NewPoster" asp-for="Poster" class="form-control-file" />
             </div>
             <div class="form-group">
                 <label asp-for="BGImage" class="control-label"></label>
-                <input asp-for="BGImage" class="form-control" />
-                <span asp-validation-for="BGImage" class="text-danger"></span>
+                <input type="file" name="NewBGImage" asp-for="BGImage" class="form-control-file" />
             </div>
             <div class="form-group">
                 <label asp-for="Trailer" class="control-label"></label>

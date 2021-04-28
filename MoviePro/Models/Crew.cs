@@ -19,5 +19,7 @@ namespace MoviePro.Models
         [Display(Name = "Profile Pic")]
         public byte[] Profile { get; set; }
         public string ContentType { get; set; }
+        public Movie Movie { get; set; }
+
     }
 }

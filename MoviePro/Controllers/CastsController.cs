@@ -2,21 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using MoviePro.Data;
 using MoviePro.Models;
+using MoviePro.Services;
 
 namespace MoviePro.Controllers
 {
     public class CastsController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public CastsController(ApplicationDbContext context)
+        private readonly IImageService _imageService;
+        public CastsController(ApplicationDbContext context, IImageService imageService)
         {
             _context = context;
+            _imageService = imageService;
         }
 
         // GET: Casts
@@ -34,6 +37,7 @@ namespace MoviePro.Controllers
             }
 
             var cast = await _context.Cast
+                .Include(c => c.Movie)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (cast == null)
             {
@@ -46,6 +50,7 @@ namespace MoviePro.Controllers
         // GET: Casts/Create
         public IActionResult Create()
         {
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Title");
             return View();
         }
 
@@ -54,14 +59,18 @@ namespace MoviePro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,MovieId,CastId,Department,Name,Character,Order,Profile,ContentType")] Cast cast)
+        public async Task<IActionResult> Create([Bind("Id,MovieId,CastId,Department,Name,Character,Order,Profile,ContentType")] Cast cast, IFormFile Profile)
         {
             if (ModelState.IsValid)
             {
+                cast.ContentType = _imageService.RecordContentType(Profile);
+                cast.Profile = await _imageService.EncodePosterAsync(Profile);
+
                 _context.Add(cast);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Title", cast.MovieId);
             return View(cast);
         }
 
@@ -78,6 +87,7 @@ namespace MoviePro.Controllers
             {
                 return NotFound();
             }
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Title", cast.MovieId);
             return View(cast);
         }
 
@@ -86,7 +96,7 @@ namespace MoviePro.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,MovieId,CastId,Department,Name,Character,Order,Profile,ContentType")] Cast cast)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MovieId,CastId,Department,Name,Character,Order,Profile,ContentType")] Cast cast, IFormFile NewProfile)
         {
             if (id != cast.Id)
             {
@@ -97,6 +107,12 @@ namespace MoviePro.Controllers
             {
                 try
                 {
+                    if (NewProfile is not null)
+                    {
+                        cast.ContentType = _imageService.RecordContentType(NewProfile);
+                        cast.Profile = await _imageService.EncodePosterAsync(NewProfile);
+                    }
+
                     _context.Update(cast);
                     await _context.SaveChangesAsync();
                 }
@@ -113,6 +129,7 @@ namespace MoviePro.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+            ViewData["MovieId"] = new SelectList(_context.Movie, "Id", "Title", cast.MovieId);
             return View(cast);
         }
 
